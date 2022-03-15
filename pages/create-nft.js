@@ -1,15 +1,15 @@
-import { ethers } from "ethers";
+/* pages/create-nft.js */
 import { useState } from "react";
-import { create as ipfsHTTPClient } from "ipfs-http-client";
+import { ethers } from "ethers";
+import { create as ipfsHttpClient } from "ipfs-http-client";
 import { useRouter } from "next/router";
 import Web3Modal from "web3modal";
 
-const client = ipfsHTTPClient("https://ipfs.infura.io:5001/api/v0");
+const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
-import { nftaddress, nftmarketaddress } from "../config";
+import { marketplaceAddress } from "../config";
 
-import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
-import NFTMarket from "../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
+import NFTMarketplace from "../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";
 
 export default function CreateItem() {
   const [fileUrl, setFileUrl] = useState(null);
@@ -21,63 +21,63 @@ export default function CreateItem() {
   const router = useRouter();
 
   async function onChange(e) {
+    /* upload image to IPFS */
     const file = e.target.files[0];
     try {
       const added = await client.add(file, {
-        progress: (prog) => console.log(`Received: ${prog}`),
+        progress: (prog) => console.log(`received: ${prog}`),
       });
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
       setFileUrl(url);
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log("Error uploading file: ", error);
     }
   }
-
-  async function createItem() {
+  async function uploadToIPFS() {
     const { name, description, price } = formInput;
     if (!name || !description || !price || !fileUrl) return;
-    const data = JSON.stringify({ name, description, image: fileUrl });
-
+    /* first, upload metadata to IPFS */
+    const data = JSON.stringify({
+      name,
+      description,
+      image: fileUrl,
+    });
     try {
       const added = await client.add(data);
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      createSale(url);
-    } catch (e) {
-      console.log("Error Uploading files to ipfs: ", e);
+      /* after metadata is uploaded to IPFS, return the URL to use it in the transaction */
+      return url;
+    } catch (error) {
+      console.log("Error uploading file: ", error);
     }
   }
 
-  async function createSale(url) {
+  async function listNFTForSale() {
+    const url = await uploadToIPFS();
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
 
-    let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
-    let transaction = await contract.createToken(url);
-    let tx = await transaction.wait();
-
-    let event = tx.events[0];
-    let value = event.args[2];
-    console.log("Event Value:", value.toNumber());
-    let tokenId = value.toNumber();
-
+    /* create the NFT */
     const price = ethers.utils.parseUnits(formInput.price, "ether");
-
-    contract = new ethers.Contract(nftmarketaddress, NFTMarket.abi, signer);
+    let contract = new ethers.Contract(
+      marketplaceAddress,
+      NFTMarketplace.abi,
+      signer
+    );
     let listingPrice = await contract.getListingPrice();
     listingPrice = listingPrice.toString();
-    console.log("Event2: ", listingPrice);
-    transaction = await contract.createMarketItem(nftaddress, tokenId, price, {
+    let transaction = await contract.createToken(url, price, {
       value: listingPrice,
     });
-
     await transaction.wait();
+
     router.push("/");
   }
 
   return (
-    <div className="flex-grow flex justify-center">
+    <div className="flex justify-center">
       <div className="w-1/2 flex flex-col pb-12">
         <input
           placeholder="Asset Name"
@@ -94,7 +94,7 @@ export default function CreateItem() {
           }
         />
         <input
-          placeholder="Asset Price in Matic"
+          placeholder="Asset Price in Eth"
           className="mt-2 border rounded p-4"
           onChange={(e) =>
             updateFormInput({ ...formInput, price: e.target.value })
@@ -103,10 +103,10 @@ export default function CreateItem() {
         <input type="file" name="Asset" className="my-4" onChange={onChange} />
         {fileUrl && <img className="rounded mt-4" width="350" src={fileUrl} />}
         <button
-          onClick={createItem}
-          className="font-bold mt-4 bg-pink-500 text-white p-4 shadow-lg rounded"
+          onClick={listNFTForSale}
+          className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg"
         >
-          Create Digital Asset
+          Create NFT
         </button>
       </div>
     </div>
