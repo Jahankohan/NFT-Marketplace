@@ -1,24 +1,29 @@
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Web3Modal from "web3modal";
+import { useWeb3 } from "@3rdweb/hooks";
+import LandingHeader from "./components/landin_header.js";
 import NFTCard from "./components/nftCard";
 import connect from "./utils/auth";
 import { marketplaceAddress } from "../config";
 
 import NFTMarketplace from "../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";
 
+const style = {
+  wrapper: ``,
+  walletConnectWrapper: `flex flex-col justify-center items-center h-screen w-screen bg-[#3b3d42] `,
+  button: `border border-[#282b2f] bg-[#2081e2] p-[0.8rem] text-xl justify-center align-middle font-semibold rounded-lg cursor-pointer text-black`,
+  details: `text-lg text-center text=[#282b2f] font-semibold mt-4`,
+};
+
 export default function Home() {
+  const { address, connectWallet } = useWeb3();
   const [nfts, setNfts] = useState([]);
   const [loadingState, setLoadingState] = useState("not-loaded");
-  const [account, setAccount] = useState();
 
-  useEffect(async () => {
-    const { account, web3 } = await connect();
-    if (account && web3) {
-      setAccount(account);
-      loadNFTs();
-    }
+  useEffect(() => {
+    loadNFTs();
+    // console.log("address", address);
   }, []);
 
   async function loadNFTs() {
@@ -53,21 +58,79 @@ export default function Home() {
   }
 
   if (loadingState === "loaded" && !nfts.length)
-    return <h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>;
+    return (
+      <div>
+        {address ? (
+          <>
+            <LandingHeader />
+            <h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>
+          </>
+        ) : (
+          <h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>
+        )}
+      </div>
+    );
   return (
-    <div>
-      <h2 className="px-20 py-10 text-3xl justify-center">All Collections</h2>
-      <div className="flex justify-center">
-        <div className="px-4" style={{ maxWidth: "1600px" }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-            {nfts.map((nft) => {
-              if (nft.owner != account) {
-                return <NFTCard key={nft.tokenId} buyable={true} nft={nft} />;
-              }
-            })}
+    <div className={style.wrapper}>
+      {address ? (
+        <>
+          <LandingHeader />
+          <div>
+            <h2 className="text-white px-20 py-10 text-3xl justify-center">
+              All Collections
+            </h2>
+            <div className="pb-4 flex justify-center">
+              <div className="w-5/6 justify-center border-t border-gray-300"></div>
+            </div>
+            <div className="flex justify-center">
+              <div className="px-4" style={{ maxWidth: "1600px" }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+                  {nfts.map((nft) => {
+                    if (nft.owner != address) {
+                      return (
+                        <NFTCard key={nft.tokenId} buyable={true} nft={nft} />
+                      );
+                    }
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-white px-20 py-10 text-3xl justify-center">
+              Artists
+            </h2>
+            <div className="pb-4 flex justify-center">
+              <div className="w-5/6 justify-center border-t border-gray-300"></div>
+            </div>
+            <div className="flex justify-center">
+              <div className="px-4" style={{ maxWidth: "1600px" }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+                  {nfts.map((nft) => {
+                    if (nft.owner != address) {
+                      return (
+                        <NFTCard key={nft.tokenId} buyable={true} nft={nft} />
+                      );
+                    }
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className={style.walletConnectWrapper}>
+          <button
+            className={style.button}
+            onClick={() => connectWallet("injected")}
+          >
+            Connect Wallet
+          </button>
+          <div className={style.details}>
+            You Need Chrome to be able to run this
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
