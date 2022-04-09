@@ -11,18 +11,32 @@ contract NFTMarketplace is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     Counters.Counter private _itemsSold;
+    Counters.Counter private _collectionIds;
 
     uint256 listingPrice = 0.025 ether;
     address payable owner;
 
+    address[] private artists;
     mapping(uint256 => MarketItem) private idToMarketItem;
-
+    mapping(uint256 => Collections) private idToCollections;
+    mapping(address => Collections[]) artistToCollection;
+    mapping(uint256 => MarketItem[]) collectionToItems;
+    
+    struct Collections {
+      uint256 collectionId;
+      address payable creator;
+      string title;
+      string description;
+      string collectionType;
+    }
+    
     struct MarketItem {
       uint256 tokenId;
       address payable seller;
       address payable owner;
       uint256 price;
       bool sold;
+      uint256 coll;
     }
 
     event MarketItemCreated (
@@ -37,6 +51,47 @@ contract NFTMarketplace is ERC721URIStorage {
       owner = payable(msg.sender);
     }
 
+    function createNFTCollection(string memory title, string memory description, string memory collecctionType) public{
+      _collectionIds.increment();
+      uint256 newCollectionId = _collectionIds.current();
+      Collections memory newCollection = Collections(newCollectionId, payable(msg.sender), title, description, collecctionType);
+      artists.push(msg.sender);
+      artistToCollection[msg.sender].push(newCollection);
+      idToCollections[newCollectionId] = newCollection;
+    }
+
+    function fetchMarketCollections() public view returns (Collections[] memory){
+      uint itemCount = _collectionIds.current();
+      uint currentIndex = 0;
+
+      Collections[] memory allCollections = new Collections[](itemCount);
+      for (uint i = 1; i <= itemCount; i++) {
+        Collections storage currentCollection = idToCollections[i];
+        allCollections[currentIndex] = currentCollection;
+        currentIndex += 1;
+      }
+      return allCollections;
+    }
+
+
+    function fetchAllArtists() public view returns (address[] memory){
+      return artists;
+    }
+
+    function fetchArtistCollections(address artist) public view returns (Collections[] memory){
+      Collections[] memory items = artistToCollection[artist];
+      return items;
+    }
+
+    function getItemsofCollection(uint256 collecctionId) public view returns (MarketItem[] memory) {
+        return collectionToItems[collecctionId];    
+    }
+
+    function addNFTtoCollection(uint256 tokenId, uint256 collectionId) public{
+      MarketItem memory item = idToMarketItem[tokenId];
+      collectionToItems[collectionId].push(item);
+    }
+
     /* Updates the listing price of the contract */
     function updateListingPrice(uint _listingPrice) public payable {
       require(owner == msg.sender, "Only marketplace owner can update listing price.");
@@ -49,30 +104,36 @@ contract NFTMarketplace is ERC721URIStorage {
     }
 
     /* Mints a token and lists it in the marketplace */
-    function createToken(string memory tokenURI, uint256 price) public payable returns (uint) {
+    function createToken(string memory tokenURI, uint256 price, uint256 collecctionId) public payable returns (uint) {
       _tokenIds.increment();
       uint256 newTokenId = _tokenIds.current();
 
       _mint(msg.sender, newTokenId);
       _setTokenURI(newTokenId, tokenURI);
-      createMarketItem(newTokenId, price);
+      createMarketItem(newTokenId, price, collecctionId);
       return newTokenId;
     }
 
     function createMarketItem(
       uint256 tokenId,
-      uint256 price
+      uint256 price,
+      uint256 collectionId
     ) private {
       require(price > 0, "Price must be at least 1 wei");
       require(msg.value == listingPrice, "Price must be equal to listing price");
+      Collections memory collection = idToCollections[collectionId];
+      require(collection.creator == msg.sender, "You Must be the owner of the collection.");
 
       idToMarketItem[tokenId] =  MarketItem(
         tokenId,
         payable(msg.sender),
         payable(address(this)),
         price,
-        false
+        false,
+        collectionId
       );
+
+      addNFTtoCollection(tokenId, collectionId);
 
       _transfer(msg.sender, address(this), tokenId);
       emit MarketItemCreated(
