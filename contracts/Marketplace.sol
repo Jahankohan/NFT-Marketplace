@@ -14,6 +14,7 @@ contract NFTMarketplace is ERC721URIStorage {
     Counters.Counter private _collectionIds;
 
     uint256 listingPrice = 0.025 ether;
+    uint256 collectingPrice = 0.025 ether;
     address payable owner;
 
     address[] private artists;
@@ -25,9 +26,6 @@ contract NFTMarketplace is ERC721URIStorage {
     struct Collections {
       uint256 collectionId;
       address payable creator;
-      string title;
-      string description;
-      string collectionType;
     }
     
     struct MarketItem {
@@ -44,17 +42,26 @@ contract NFTMarketplace is ERC721URIStorage {
       address seller,
       address owner,
       uint256 price,
-      bool sold
+      bool sold,
+      uint256 coll
     );
+
 
     constructor() ERC721("Metaverse Tokens", "METT") {
       owner = payable(msg.sender);
     }
 
-    function createNFTCollection(string memory title, string memory description, string memory collecctionType) public{
+    // Creating NFT collection, TODO: It should be payable function;
+    function createNFTCollection(string memory collectionURI) public payable{
+      require(msg.value == collectingPrice, "Price must be equal to collecting price");
+      _tokenIds.increment();
       _collectionIds.increment();
-      uint256 newCollectionId = _collectionIds.current();
-      Collections memory newCollection = Collections(newCollectionId, payable(msg.sender), title, description, collecctionType);
+      uint256 newCollectionId = _tokenIds.current();
+
+      _mint(msg.sender, newCollectionId);
+      _setTokenURI(newCollectionId, collectionURI);
+
+      Collections memory newCollection = Collections(newCollectionId, payable(msg.sender));
       artists.push(msg.sender);
       artistToCollection[msg.sender].push(newCollection);
       idToCollections[newCollectionId] = newCollection;
@@ -103,6 +110,41 @@ contract NFTMarketplace is ERC721URIStorage {
       return listingPrice;
     }
 
+    function updateCollectingPrice(uint _collectingPrice) public payable {
+      require(owner == msg.sender, "Only marketplace owner can update collecting price.");
+      collectingPrice = _collectingPrice;
+    }
+
+    function getCollectingPrice() public view returns (uint256) {
+      return collectingPrice;
+    }
+
+    // // Create NFT for auction
+    // function createNFTAuction(string memory tokenURI, uint256 initialPrice, uint256 auctionEndsIn, uint256 collectionId) public payable returns(uint){
+    //   _tokenIds.increment();
+    //   uint256 newTokenId = _tokenIds.current();
+
+    //   _mint(msg.sender, newTokenId);
+    //   _setTokenURI(newTokenId, tokenURI);
+    //   createMarketAuction(newTokenId, initialPrice, auctionEndsIn, collectionId);
+    //   return newTokenId;
+    // }
+
+    // function createMarketAuction(uint256 tokenId, uint256 initialPrice, uint256 auctionEndsIn, uint256 collectionId) private{
+
+    // }
+
+    // // Lazy Minting allow artists to create and list their NFTs and pay the price after their NFT been sold.
+    // function lazyMinting(string memory tokenURI, uint256 price, uint256 collectionId) public returns (uint){
+    //   _tokenIds.increment();
+    //   uint256 newTokenId = _tokenIds.current();
+
+    //   _mint(msg.sender, newTokenId);
+    //   _setTokenURI(newTokenId, tokenURI);
+    //   createMarketItem(newTokenId, price, collectionId, true);
+    //   return newTokenId;
+    // }
+
     /* Mints a token and lists it in the marketplace */
     function createToken(string memory tokenURI, uint256 price, uint256 collecctionId) public payable returns (uint) {
       _tokenIds.increment();
@@ -110,17 +152,25 @@ contract NFTMarketplace is ERC721URIStorage {
 
       _mint(msg.sender, newTokenId);
       _setTokenURI(newTokenId, tokenURI);
-      createMarketItem(newTokenId, price, collecctionId);
+      createMarketItem(newTokenId, price, collecctionId, false);
       return newTokenId;
     }
 
     function createMarketItem(
       uint256 tokenId,
       uint256 price,
-      uint256 collectionId
+      uint256 collectionId,
+      bool isLazyMinted
     ) private {
-      require(price > 0, "Price must be at least 1 wei");
-      require(msg.value == listingPrice, "Price must be equal to listing price");
+
+      if(isLazyMinted) {
+        require(price >= listingPrice, "Price atleast must be equal to listing price");
+      }
+      else {
+        require(price > 0, "Price must be at least 1 wei");
+        require(msg.value == listingPrice, "Price must be equal to listing price");
+      }
+
       Collections memory collection = idToCollections[collectionId];
       require(collection.creator == msg.sender, "You Must be the owner of the collection.");
 
@@ -141,7 +191,8 @@ contract NFTMarketplace is ERC721URIStorage {
         msg.sender,
         address(this),
         price,
-        false
+        false,
+        collectionId
       );
     }
 
@@ -178,7 +229,7 @@ contract NFTMarketplace is ERC721URIStorage {
     /* Returns all unsold market items */
     function fetchMarketItems() public view returns (MarketItem[] memory) {
       uint itemCount = _tokenIds.current();
-      uint unsoldItemCount = _tokenIds.current() - _itemsSold.current();
+      uint unsoldItemCount = _tokenIds.current() - _itemsSold.current() - _collectionIds.current();
       uint currentIndex = 0;
 
       MarketItem[] memory items = new MarketItem[](unsoldItemCount);
