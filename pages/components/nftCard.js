@@ -44,6 +44,9 @@ export default function NFTCard({ nft, buyable }) {
         <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
           {nft.description.substring(0, 80)}
         </p>
+        <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+          {nft.collection}
+        </p>
         <div className="pb-4">
           <p className="text-2xl font-bold text-white">
             Price - {nft.price} Eth

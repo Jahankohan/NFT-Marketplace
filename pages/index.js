@@ -5,6 +5,7 @@ import { useWeb3 } from "@3rdweb/hooks";
 import LandingHeader from "./components/landin_header.js";
 import NFTCard from "./components/nftCard";
 import connect from "./utils/auth";
+import NFTCards from "./components/NFTCards";
 import { marketplaceAddress } from "../config";
 
 import NFTMarketplace from "../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";
@@ -40,6 +41,8 @@ export default function Home() {
       data.map(async (i) => {
         const tokenUri = await contract.tokenURI(i.tokenId);
         const meta = await axios.get(tokenUri);
+        const collectionUri = await contract.tokenURI(i.coll);
+        const collectionMeta = await axios.get(collectionUri);
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
         let item = {
           price,
@@ -49,7 +52,9 @@ export default function Home() {
           image: meta.data.image,
           name: meta.data.name,
           description: meta.data.description,
+          collection: collectionMeta.data.title,
         };
+        console.log("NFT Items:", item);
         return item;
       })
     );
@@ -79,41 +84,11 @@ export default function Home() {
             <h2 className="text-white px-20 py-10 text-3xl justify-center">
               All Collections
             </h2>
-            <div className="pb-4 flex justify-center">
-              <div className="w-5/6 justify-center border-t border-gray-300"></div>
-            </div>
-            <div className="flex justify-center">
-              <div className="px-4" style={{ maxWidth: "1600px" }}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-                  {nfts.map((nft) => {
-                    if (nft.owner != address) {
-                      return (
-                        <NFTCard key={nft.tokenId} buyable={true} nft={nft} />
-                      );
-                    }
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h2 className="text-white px-20 py-10 text-3xl justify-center">
-              Artists
-            </h2>
-            <div className="pb-4 flex justify-center">
-              <div className="w-5/6 justify-center border-t border-gray-300"></div>
-            </div>
-            <div className="flex justify-center">
-              <div className="px-4" style={{ maxWidth: "1600px" }}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-                  {nfts.map((nft) => {
-                    if (nft.owner != address) {
-                      return (
-                        <NFTCard key={nft.tokenId} buyable={true} nft={nft} />
-                      );
-                    }
-                  })}
-                </div>
+            <div>
+              <div className="flex flex-wrap ">
+                {nfts.map((nftItem, id) => (
+                  <NFTCards key={id} nftItem={nftItem} loadNFTs={loadNFTs} />
+                ))}
               </div>
             </div>
           </div>

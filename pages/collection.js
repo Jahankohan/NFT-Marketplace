@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { CgWebsite } from "react-icons/cg";
 import { AiOutlineInstagram, AiOutlineTwitter } from "react-icons/ai";
 import { HiDotsVertical } from "react-icons/hi";
