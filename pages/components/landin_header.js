@@ -23,12 +23,9 @@ const LandingHeader = () => {
       <div className={style.container}>
         <div className={style.contentWrapper}>
           <div className={style.copyContainer}>
-            <div className={style.title}>
-              Discover, Collect and Sell Unique NFTs.
-            </div>
+            <div className={style.title}>Discover Charitable Activities</div>
             <div className={style.description}>
-              Yanus NFTMarket is leading platform in very unique and rare
-              Iranian collections.
+              Cultchain is a Web3 Based Marketplace for Charities Activities
             </div>
             <div className={style.ctaContainer}>
               <button className={style.accentedButton}>Explore</button>

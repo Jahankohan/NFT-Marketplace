@@ -37,7 +37,7 @@ export default function Nav() {
       <Link href="/">
         <div className={style.logoContainer}>
           <img src={yanusLogo} height={40} width={40} />
-          <div className={style.logoText}>Yanus NFTMarket</div>
+          <div className={style.logoText}>Cultchain</div>
         </div>
       </Link>
       <div className={style.searchBar}>
@@ -50,8 +50,8 @@ export default function Nav() {
         />
       </div>
       <div className={style.headerItems}>
-        <Link href="/">
-          <div className={style.headerItem}>Home</div>
+        <Link href="/explore">
+          <div className={style.headerItem}>Explore</div>
         </Link>
         <Link href="/create-nft">
           <div className={style.headerItem}>Mint</div>
