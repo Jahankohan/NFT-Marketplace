@@ -3,9 +3,9 @@ import { BiHeart } from "react-icons/bi";
 import { useRouter } from "next/router";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import { marketplaceAddress } from "../../config";
+import { marketplaceAddress } from "../config";
 
-import NFTMarketplace from "../../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";
+import NFTMarketplace from "../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";
 
 const style = {
   wrapper: `bg-[#303339] w-[15rem] h-[24rem] my-10 mx-5 rounded-2xl overflow-hidden cursor-pointer`,

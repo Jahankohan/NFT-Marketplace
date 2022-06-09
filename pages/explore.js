@@ -2,10 +2,8 @@ import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useWeb3 } from "@3rdweb/hooks";
-import LandingHeader from "./components/landin_header.js";
-import NFTCard from "./components/nftCard";
-import connect from "./utils/auth";
-import NFTCards from "./components/NFTCards";
+import LandingHeader from "../components/landin_header.js";
+import NFTCards from "../components/NFTCards";
 import { marketplaceAddress } from "../config";
 
 import NFTMarketplace from "../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";

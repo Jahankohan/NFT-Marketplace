@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { cultchainLogo } from "../../assets/cultchain.svg";
 import { AiOutlineSearch } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import { useEffect, useState } from "react";
-import connect from "../utils/auth";
+import connect from "./utils/auth";
 
 const style = {
   wrapper: `bg-[#04111d] w-screen px-[1.2rem] py-[0.8rem] flex `,
@@ -37,7 +36,7 @@ export default function Nav() {
       <Link href="/">
         <div className={style.logoContainer}>
           <Image
-            src="/../../assets/cultchain.svg"
+            src="/../assets/cultchain.svg"
             alt="cultchain logo"
             height={40}
             width={40}

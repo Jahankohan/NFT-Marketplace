@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import { ThirdwebWeb3Provider } from "@3rdweb/hooks";
-import Layout from "./components/layout";
+import Layout from "../components/layout";
 
 const supportedChainIds = [1337];
 const connectors = {

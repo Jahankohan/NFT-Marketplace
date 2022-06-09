@@ -1,9 +1,9 @@
-import { nftMarketplaceAddress } from "../utils/options";
+/* eslint-disable @next/next/no-img-element */
+import { marketplaceAddress } from "../../config";
 import NFTMarketplace from "../../artifacts/contracts/Marketplace.sol/NFTMarketplace.json";
 
 import { useRouter } from "next/router";
 import connect from "../utils/auth";
-import { useState } from "react";
 
 export default function NFTCard({ nft, buyable }) {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function NFTCard({ nft, buyable }) {
     const { account, web3 } = await connect();
     const nftMarketplaceContract = new web3.eth.Contract(
       NFTMarketplace.abi,
-      nftMarketplaceAddress
+      marketplaceAddress
     );
     const price = ethers.utils.parseUnits(nft.price.toString(), "ether");
     nftMarketplaceContract.methods
