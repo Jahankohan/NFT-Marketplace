@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { yanusLogo } from "../../assets/yanus_logo.png";
+import { cultchainLogo } from "../../assets/cultchain.svg";
 import { AiOutlineSearch } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
@@ -36,7 +36,12 @@ export default function Nav() {
     <div className={style.wrapper}>
       <Link href="/">
         <div className={style.logoContainer}>
-          <img src={yanusLogo} height={40} width={40} />
+          <Image
+            src="/../../assets/cultchain.svg"
+            alt="cultchain logo"
+            height={40}
+            width={40}
+          />
           <div className={style.logoText}>Cultchain</div>
         </div>
       </Link>
