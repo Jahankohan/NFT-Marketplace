@@ -2,10 +2,7 @@
 import { CgWebsite } from "react-icons/cg";
 import { AiOutlineInstagram, AiOutlineTwitter } from "react-icons/ai";
 import { HiDotsVertical } from "react-icons/hi";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import { useWeb3 } from "@3rdweb/hooks";
-import NFTCards from "./components/NFTCards";
+import NFTCards from "../components/NFTCards";
 
 const style = {
   bannerImageContainer: `h-[20vh] w-screen overflow-hidden flex justify-center items-center`,

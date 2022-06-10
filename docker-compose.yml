@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: cultchain
+    image: cultchain
+    build:
+      context: .
+    volumes:
+      - ./src:/usr/src/app
+    ports:
+      - 3000:3000
