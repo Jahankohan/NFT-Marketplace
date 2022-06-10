@@ -1,9 +1,6 @@
 /* hardhat.config.js */
 require("@nomiclabs/hardhat-waffle");
-const fs = require("fs");
-const privateKey = fs.readFileSync(".secret").toString();
-const dev_projectId = "o0rrxpvDMX_QHMQ5KCYz567NGEYxI-sy";
-const dep_projectId = "KpiLsg77lh07w-kgP1pDySBKJMnvQ4YR";
+privateKey = process.env.TEST_PRIVATE_KEY;
 
 module.exports = {
   defaultNetwork: "hardhat",
@@ -12,11 +9,14 @@ module.exports = {
       chainId: 1337,
     },
     mumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${dev_projectId}`,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.TEST_ALCHEMY_API_KEY}`,
       accounts: [privateKey],
+      gas: 2100000,
+      gasPrice: 8000000000,
+      saveDeployments: true,
     },
     mainnet: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${dep_projectId}`,
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.MAIN_ALCHEMY_API_KEY}`,
       accounts: [privateKey],
     },
   },
